@@ -60,6 +60,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->actionExportCsv, &QAction::triggered,
                      this, &MainWindow::onExportCsv);
 
+    QObject::connect(ui->actionQuit, &QAction::triggered,
+                     this, &MainWindow::close);
+
     QObject::connect(&portControl, &PortControl::portToggled,
                      this, &MainWindow::onPortToggled);
 
@@ -141,6 +144,14 @@ MainWindow::MainWindow(QWidget *parent) :
         selectNumberFormat(NumberFormat_uint8);
     }
 
+    // Init sps (sample per second) counter
+    sampleCount = 0;
+    spsLabel.setText("0sps");
+    ui->statusBar->addPermanentWidget(&spsLabel);
+    spsTimer.start(SPS_UPDATE_TIMEOUT * 1000);
+    QObject::connect(&spsTimer, &QTimer::timeout,
+                     this, &MainWindow::spsTimerTimeout);
+
     // Init demo mode
     demoCount = 0;
     demoTimer.setInterval(100);
@@ -148,6 +159,18 @@ MainWindow::MainWindow(QWidget *parent) :
                      this, &MainWindow::demoTimerTimeout);
     QObject::connect(ui->actionDemoMode, &QAction::toggled,
                      this, &MainWindow::enableDemo);
+
+    {   // init demo indicator
+        QwtText demoText(" DEMO RUNNING ");  // looks better with spaces
+        demoText.setColor(QColor("white"));
+        demoText.setBackgroundBrush(Qt::darkRed);
+        demoText.setBorderRadius(4);
+        demoText.setRenderFlags(Qt::AlignLeft | Qt::AlignTop);
+        demoIndicator.setText(demoText);
+        demoIndicator.hide();
+        demoIndicator.attach(ui->plot);
+    }
+
 }
 
 MainWindow::~MainWindow()
@@ -241,6 +264,13 @@ void MainWindow::onDataReadyASCII()
     while(serialPort.canReadLine())
     {
         QByteArray line = serialPort.readLine();
+
+        // discard data if paused
+        if (ui->actionPause->isChecked())
+        {
+            return;
+        }
+
         line = line.trimmed();
         auto separatedValues = line.split(',');
 
@@ -361,6 +391,8 @@ void MainWindow::addChannelData(unsigned int channel, DataArray data)
     // update plot
     curves[channel]->setSamples(dataX, (*channelDataArray));
     ui->plot->replot(); // TODO: replot after all channel data updated
+
+    sampleCount += data.size();
 }
 
 void MainWindow::clearPlot()
@@ -544,6 +576,12 @@ bool MainWindow::isDemoRunning()
     return ui->actionDemoMode->isChecked();
 }
 
+void MainWindow::spsTimerTimeout()
+{
+    spsLabel.setText(QString::number(sampleCount/SPS_UPDATE_TIMEOUT) + "sps");
+    sampleCount = 0;
+}
+
 void MainWindow::demoTimerTimeout()
 {
     demoCount++;
@@ -568,6 +606,8 @@ void MainWindow::enableDemo(bool enabled)
         {
             demoTimer.start();
             ui->actionDemoMode->setChecked(true);
+            demoIndicator.show();
+            ui->plot->replot();
         }
         else
         {
@@ -578,6 +618,8 @@ void MainWindow::enableDemo(bool enabled)
     {
         demoTimer.stop();
         ui->actionDemoMode->setChecked(false);
+        demoIndicator.hide();
+        ui->plot->replot();
     }
 }
 
