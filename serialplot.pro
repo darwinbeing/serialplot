@@ -35,7 +35,6 @@ CONFIG += qwt
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    customcheckablebutton.cpp \
     portcontrol.cpp \
     plot.cpp \
     zoomer.cpp \
@@ -46,7 +45,6 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     utils.h \
-    customcheckablebutton.h \
     portcontrol.h \
     floatswap.h \
     plot.h \

@@ -21,22 +21,33 @@
 #include "ui_portcontrol.h"
 
 #include <QSerialPortInfo>
+#include <QKeySequence>
 #include <QtDebug>
 #include "utils.h"
 
 PortControl::PortControl(QSerialPort* port, QWidget* parent) :
     QWidget(parent),
-    ui(new Ui::PortControl)
+    ui(new Ui::PortControl),
+    portToolBar("Port"),
+    openAction("Open", this)
 {
     ui->setupUi(this);
 
     serialPort = port;
 
+    // setup the toolbar
+    openAction.setCheckable(true);
+    openAction.setShortcut(QKeySequence("F2"));
+    openAction.setToolTip("Open Port (F2)");
+    QObject::connect(&openAction, &QAction::triggered,
+                     this, &PortControl::openActionTriggered);
+    portToolBar.addAction(&openAction);
+
+    // setup buttons
     QObject::connect(ui->pbReloadPorts, &QPushButton::clicked,
                      this, &PortControl::loadPortList);
 
-    QObject::connect(ui->pbOpenPort, &QPushButton::clicked,
-                     this, &PortControl::togglePort);
+    ui->pbOpenPort->setDefaultAction(&openAction);
 
     // TODO: port name coming from combobox is dirty, create a separate layer of signals
     //       that will sanitize this information
@@ -221,6 +232,8 @@ void PortControl::togglePort()
     {
         // port name may contain description
         QString portName = ui->cbPortList->currentText().split(" ")[0];
+        keepPortName(portName);
+
         serialPort->setPortName(portName);
 
         // open port
@@ -237,7 +250,7 @@ void PortControl::togglePort()
             emit portToggled(true);
         }
     }
-    ui->pbOpenPort->setChecked(serialPort->isOpen());
+    openAction.setChecked(serialPort->isOpen());
 }
 
 void PortControl::selectPort(QString portName)
@@ -263,12 +276,30 @@ void PortControl::enableSkipByte(bool enabled)
     ui->pbSkipByte->setDisabled(enabled);
 }
 
-void PortControl::onPortNameChanged(QString portName)
+void PortControl::keepPortName(QString portName)
 {
-    // was this a user entered name?
     if(!discoveredPorts.contains(portName) &&
        !userEnteredPorts.contains(portName))
     {
         userEnteredPorts << portName;
     }
+    if(ui->cbPortList->findText(portName) < 0)
+    {
+        ui->cbPortList->addItem(portName);
+    }
+}
+
+void PortControl::onPortNameChanged(QString portName)
+{
+    keepPortName(portName);
+}
+
+QToolBar* PortControl::toolBar()
+{
+    return &portToolBar;
+}
+
+void PortControl::openActionTriggered(bool checked)
+{
+    togglePort();
 }
