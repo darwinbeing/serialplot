@@ -54,8 +54,10 @@ else (BUILD_QWT)
   endif (QWT_USE_STATIC)
 endif (BUILD_QWT)
 
+include(BuildQColorWidgets)
+
 # includes
-include_directories("./src" ${QWT_INCLUDE_DIR})
+include_directories("./src" ${QWT_INCLUDE_DIR} ${QCW_INCLUDE_DIR})
 
 # wrap UI and resource files
 qt5_wrap_ui(UI_FILES
@@ -105,6 +107,7 @@ add_executable(${PROGRAM_NAME} WIN32
   src/tooltipfilter.cpp
   src/sneakylineedit.cpp
   src/channelmanager.cpp
+  src/channelinfomodel.cpp
   src/framebufferseries.cpp
   src/numberformatbox.cpp
   src/endiannessbox.cpp
@@ -124,8 +127,8 @@ add_executable(${PROGRAM_NAME} WIN32
   )
 
 # Use the Widgets module from Qt 5.
-target_link_libraries(${PROGRAM_NAME} ${QWT_LIBRARY})
-qt5_use_modules(${PROGRAM_NAME} Widgets SerialPort Svg)
+target_link_libraries(${PROGRAM_NAME} ${QWT_LIBRARY} ${QCW_LIBRARY})
+qt5_use_modules(${PROGRAM_NAME} Widgets SerialPort)
 
 if (BUILD_QWT)
   add_dependencies(${PROGRAM_NAME} QWT)
