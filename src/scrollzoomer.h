@@ -45,12 +45,17 @@ public:
     ScrollBarPosition hScrollBarPosition() const;
     ScrollBarPosition vScrollBarPosition() const;
 
+    void setXLimits(double min, double max);
+
     QWidget* cornerWidget() const;
     virtual void setCornerWidget( QWidget * );
 
     virtual bool eventFilter( QObject *, QEvent * );
 
     virtual void rescale();
+
+public Q_SLOTS:
+    virtual void moveTo( const QPointF & );
 
 protected:
     virtual ScrollBar *scrollBar( Qt::Orientation );
@@ -61,6 +66,9 @@ private Q_SLOTS:
     void scrollBarMoved( Qt::Orientation o, double min, double max );
 
 private:
+    QRectF d_limits;
+    double xMin, xMax;
+
     bool needScrollBar( Qt::Orientation ) const;
     int oppositeAxis( int ) const;
 

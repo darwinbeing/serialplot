@@ -42,6 +42,10 @@ ScrollZoomer::ScrollZoomer( QWidget *canvas ):
     d_vScrollData( NULL ),
     d_inZoom( false )
 {
+    d_limits = QRectF(0, -10, 10000, 20);
+    xMin = 0.;
+    xMax = 10000.;
+
     for ( int axis = 0; axis < QwtPlot::axisCnt; axis++ )
         d_alignCanvasToScales[ axis ] = false;
 
@@ -61,6 +65,8 @@ ScrollZoomer::~ScrollZoomer()
 
 void ScrollZoomer::rescale()
 {
+    qDebug() << "rescale";
+
     QwtScaleWidget *xScale = plot()->axisWidget( xAxis() );
     QwtScaleWidget *yScale = plot()->axisWidget( yAxis() );
 
@@ -237,6 +243,11 @@ bool ScrollZoomer::eventFilter( QObject *object, QEvent *event )
                 layoutScrollBars( rect );
                 break;
             }
+            case QEvent::Show:
+            {
+                layoutScrollBars( canvas()->contentsRect() );
+                break;
+            }
             case QEvent::ChildRemoved:
             {
                 const QObject *child =
@@ -265,8 +276,8 @@ bool ScrollZoomer::needScrollBar( Qt::Orientation orientation ) const
     if ( orientation == Qt::Horizontal )
     {
         mode = d_hScrollData->mode;
-        baseMin = zoomBase().left();
-        baseMax = zoomBase().right();
+        baseMin = xMin;
+        baseMax = xMax;
         zoomMin = zoomRect().left();
         zoomMax = zoomRect().right();
     }
@@ -300,6 +311,8 @@ bool ScrollZoomer::needScrollBar( Qt::Orientation orientation ) const
 
 void ScrollZoomer::updateScrollBars()
 {
+    qDebug() << "updateScrollBars()";
+
     if ( !canvas() )
         return;
 
@@ -323,8 +336,9 @@ void ScrollZoomer::updateScrollBars()
         ScrollBar *sb = scrollBar( Qt::Horizontal );
         sb->setPalette( plot()->palette() );
         sb->setInverted( !plot()->axisScaleDiv( xAxis ).isIncreasing() );
-        sb->setBase( zoomBase().left(), zoomBase().right() );
+        sb->setBase( xMin, xMax );
         sb->moveSlider( zoomRect().left(), zoomRect().right() );
+        qDebug() << "moveSlider" << zoomRect().left() << zoomRect().right();
 
         if ( !sb->isVisibleTo( canvas() ) )
         {
@@ -349,7 +363,7 @@ void ScrollZoomer::updateScrollBars()
         ScrollBar *sb = scrollBar( Qt::Vertical );
         sb->setPalette( plot()->palette() );
         sb->setInverted( plot()->axisScaleDiv( yAxis ).isIncreasing() );
-        sb->setBase( zoomBase().top(), zoomBase().bottom() );
+        sb->setBase( zoomRect().top(), zoomRect().bottom() );
         sb->moveSlider( zoomRect().top(), zoomRect().bottom() );
 
         if ( !sb->isVisibleTo( canvas() ) )
@@ -391,6 +405,8 @@ void ScrollZoomer::updateScrollBars()
 
 void ScrollZoomer::layoutScrollBars( const QRect &rect )
 {
+    qDebug() << "layoutScrollBars" << rect;
+
     int hPos = xAxis();
     if ( hScrollBarPosition() == OppositeToScale )
         hPos = oppositeAxis( hPos );
@@ -486,4 +502,31 @@ int ScrollZoomer::oppositeAxis( int axis ) const
     }
 
     return axis;
+}
+
+void ScrollZoomer::moveTo( const QPointF &pos )
+{
+    // QwtPlotZoomer::moveTo(pos);
+    // return;
+
+    double x = pos.x();
+    double y = pos.y();
+
+    if ( x < xMin )
+        x = xMin;
+    if ( x > xMax - zoomRect().width() )
+        x = xMax - zoomRect().width();
+
+    if ( y < zoomBase().top() )
+        y = zoomBase().top();
+    if ( y > zoomBase().bottom() - zoomRect().height() )
+        y = zoomBase().bottom() - zoomRect().height();
+
+    if ( x != zoomRect().left() || y != zoomRect().top() )
+    {
+        auto zs = zoomStack();
+        zs[zoomRectIndex()].moveTo( x, y );
+        setZoomStack(zs, zoomRectIndex());
+        rescale();
+    }
 }

@@ -102,14 +102,14 @@ void Plot::setXAxis(double xMin, double xMax)
     zoomer.zoom(0); // unzoom
 
     // set axis
-    setAxisScale(QwtPlot::xBottom, xMin, xMax);
+    // setAxisScale(QwtPlot::xBottom, xMin, xMax);
     replot(); // Note: if we don't replot here scale at startup isn't set correctly
 
     // reset zoom base
-    auto base = zoomer.zoomBase();
-    base.setLeft(xMin);
-    base.setRight(xMax);
-    zoomer.setZoomBase(base);
+    // auto base = zoomer.zoomBase();
+    // base.setLeft(xMin);
+    // base.setRight(xMax);
+    // zoomer.setZoomBase(base);
 
     onXScaleChanged();
 }
