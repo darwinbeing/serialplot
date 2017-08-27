@@ -19,17 +19,12 @@
 
 include(ExternalProject)
 
-ExternalProject_Add(QCW
-  PREFIX qcw
-  GIT_REPOSITORY https://github.com/mbasaglia/Qt-Color-Widgets
-  CMAKE_CACHE_ARGS "-DCMAKE_CXX_FLAGS:string=-D QTCOLORWIDGETS_STATICALLY_LINKED"
+ExternalProject_Add(LEDW
+  PREFIX ledw
+  HG_REPOSITORY https://bitbucket.org/hyOzd/ledwidget
   UPDATE_COMMAND ""
   INSTALL_COMMAND "")
 
-ExternalProject_Get_Property(QCW binary_dir source_dir)
-set(QTCOLORWIDGETS_FLAGS "-D QTCOLORWIDGETS_STATICALLY_LINKED")
-set(QTCOLORWIDGETS_LIBRARY ${binary_dir}/libColorWidgets-qt5.a)
-set(QTCOLORWIDGETS_INCLUDE_DIR ${source_dir}/include)
-
-set(QTCOLORWIDGETS_LIBRARIES ${QTCOLORWIDGETS_LIBRARY})
-set(QTCOLORWIDGETS_INCLUDE_DIRS ${QTCOLORWIDGETS_INCLUDE_DIR})
+ExternalProject_Get_Property(LEDW binary_dir source_dir)
+set(LEDWIDGET_INCLUDE_DIR ${source_dir}/src)
+set(LEDWIDGET_LIBRARY ${binary_dir}/libledwidget.a)
