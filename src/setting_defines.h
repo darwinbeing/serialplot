@@ -30,6 +30,7 @@ const char SettingGroup_Channels[] = "Channels";
 const char SettingGroup_Plot[] = "Plot";
 const char SettingGroup_Commands[] = "Commands";
 const char SettingGroup_Record[] = "Record";
+const char SettingGroup_UpdateCheck[] = "UpdateCheck";
 
 // mainwindow setting keys
 const char SG_MainWindow_Size[] = "size";
@@ -57,6 +58,8 @@ const char SG_Binary_Endianness[] = "endianness";
 
 // ascii reader keys
 const char SG_ASCII_NumOfChannels[] = "numOfChannels";
+const char SG_ASCII_Delimiter[] = "delimiter";
+const char SG_ASCII_CustomDelimiter[] = "customDelimiter";
 
 // framed reader keys
 const char SG_CustomFrame_NumOfChannels[] = "numOfChannels";
@@ -103,5 +106,9 @@ const char SG_Record_StopOnClose[]      = "stopOnClose";
 const char SG_Record_Header[]           = "header";
 const char SG_Record_Separator[]        = "separator";
 const char SG_Record_DisableBuffering[] = "disableBuffering";
+
+// update check settings keys
+const char SG_UpdateCheck_Periodic[]  = "periodicCheck";
+const char SG_UpdateCheck_LastCheck[] = "lastCheck";
 
 #endif // SETTING_DEFINES_H

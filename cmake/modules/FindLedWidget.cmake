@@ -17,19 +17,9 @@
 # along with serialplot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-include(ExternalProject)
+find_library(LEDWIDGET_LIBRARY "ledwidget")
+find_path(LEDWIDGET_INCLUDE_DIR "ledwidget.h" PATH_SUFFIXES "ledwidget")
 
-ExternalProject_Add(QCW
-  PREFIX qcw
-  GIT_REPOSITORY https://github.com/mbasaglia/Qt-Color-Widgets
-  CMAKE_CACHE_ARGS "-DCMAKE_CXX_FLAGS:string=-D QTCOLORWIDGETS_STATICALLY_LINKED"
-  UPDATE_COMMAND ""
-  INSTALL_COMMAND "")
+mark_as_advanced(LEDWIDGET_LIBRARY LEDWIDGET_INCLUDE_DIR)
 
-ExternalProject_Get_Property(QCW binary_dir source_dir)
-set(QTCOLORWIDGETS_FLAGS "-D QTCOLORWIDGETS_STATICALLY_LINKED")
-set(QTCOLORWIDGETS_LIBRARY ${binary_dir}/libColorWidgets-qt5.a)
-set(QTCOLORWIDGETS_INCLUDE_DIR ${source_dir}/include)
-
-set(QTCOLORWIDGETS_LIBRARIES ${QTCOLORWIDGETS_LIBRARY})
-set(QTCOLORWIDGETS_INCLUDE_DIRS ${QTCOLORWIDGETS_INCLUDE_DIR})
+find_package_handle_standard_args(LedWidget DEFAULT_MSG LEDWIDGET_LIBRARY LEDWIDGET_INCLUDE_DIR)
